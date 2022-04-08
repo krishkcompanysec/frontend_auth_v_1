@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import { makeStyles } from "@mui/styles";
 import {useFormik} from 'formik';
 import * as Yup from 'yup';
@@ -16,21 +16,27 @@ import { Typography } from "@mui/material";
 import ArrowUpwardOutlinedIcon from '@mui/icons-material/ArrowUpwardOutlined';
 import ArrowDownwardOutlinedIcon from '@mui/icons-material/ArrowDownwardOutlined';
 import excel from './assets/excel.jpg';
+import axios from "axios";
 
 const useStyles=makeStyles({
   container:{
        backgroundImage:`url(${excel})`,
         backgroundRepeat:'no-repeat',
         backgroundSize:'cover',
-        color:'white'
+    },
+    header:{
+      color:'white',
     },
     para:{
         margin:'10px',
         padding:'2px'
     },
-    button:{
-      margin:'10px',
-      paddingTop:'20px',
+    error:{
+      color:'red',
+    },
+    arrowbutton:{
+      margin:'5px',
+      paddingTop:'10px',
       border:'none',
       backgroundColor:'white',
       cursor:'pointer'
@@ -42,23 +48,35 @@ const useStyles=makeStyles({
 
 function Login(){
     const classes = useStyles();
-
+     const [login,setLogin]=useState();
     const formik = useFormik({
         initialValues: {
-          email: '',
-          password:''
+          email:'',
+          pwd:''
         },
         validationSchema: Yup.object({
-          email: Yup.string().matches(/@tcs.com/).email('Invalid email address').required('Required'),
-          password: Yup.string()
+          email: Yup.string().matches(/@tcs.com/).required('Required'),
+          pwd: Yup.string()
           .min(8, 'Password must have atleast 8 characters or more')
           .required('Required'),
         }),
-        onSubmit: values => {
-          alert(JSON.stringify(values));
+        onSubmit: (values) => {
+          // alert(JSON.stringify(values));
+          console.log(values);
+          axios.post("https://safe-basin-97450.herokuapp.com/login",values)
+          .then(
+            (response)=>{
+              console.log(response);
+              setLogin(response.data);
+              //redirect=>(/home)
+            }
+
+          )
+          .catch((err)=>console.log(err))
+      
         },
       });
-
+    
     
       const [show, setShow] = React.useState(false);
       const container = React.useRef(null);
@@ -70,7 +88,7 @@ function Login(){
     return(
    <>
     <div className={classes.container}>
-       <center> <h1>Welcome to Auth-V</h1> </center>
+       <center> <h1 className={classes.header}>Welcome to Auth-V</h1> </center>
      <ThemeProvider theme={theme}>
       <Container component="main" maxWidth="sm">
         <CssBaseline />
@@ -89,7 +107,7 @@ function Login(){
           <Typography component="h1" variant="h5" sx={{paddingTop:'5px', color:'black'}}>
             Sign in
           </Typography>
-          <Box component="form" onSubmit={formik.handleSubmit} noValidate sx={{ mt: 1 }}>
+          <Box component="form" onSubmit={formik.handleSubmit} sx={{ mt: 1 }}>
             <TextField
               margin="normal"
               fullWidth
@@ -101,23 +119,21 @@ function Login(){
               autoComplete="email"
               autoFocus
             />
-            {formik.touched.email && formik.errors.email ? (
-         <div className={classes.error}>{formik.errors.email}</div>
-       ) : null}
+            {formik.touched.email && formik.errors.email ? 
+            (<div className={classes.error}>{formik.errors.email}</div>) : null}
             <TextField
               margin="normal"
               fullWidth
-              name="password"
+              name="pwd"
               label="Password"
               type="password"
               onChange={formik.handleChange}
               onBlur={formik.handleBlur}
-              value={formik.values.password}
-              autoComplete="current-password"
+              value={formik.values.pwd}
+              autoComplete="password"
             />
-            {formik.touched.password && formik.errors.password ? (
-         <div className={classes.error}>{formik.errors.password}</div>
-       ) : null}
+            {formik.touched.pwd && formik.errors.pwd ? 
+            (<div className={classes.error}>{formik.errors.pwd}</div>) : null}
             {/* <FormControlLabel
               control={<Checkbox value="remember" color="primary" />}
               label="Remember me"
@@ -151,8 +167,8 @@ function Login(){
     </div>
     <center>    
       <h3>Click on below arrow to know more about how to use</h3>
-      <button className={classes.button} type="button" onClick={handleClick}>
-        {show ? <ArrowUpwardOutlinedIcon/>: <ArrowDownwardOutlinedIcon/>}
+      <button className={classes.arrowbutton} type="button" onClick={handleClick}>
+        {show ? <><ArrowUpwardOutlinedIcon/><p>Scroll down</p></>: <ArrowDownwardOutlinedIcon/>}
       </button>
     </center>
     
